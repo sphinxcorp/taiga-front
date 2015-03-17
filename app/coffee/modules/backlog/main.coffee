@@ -49,11 +49,12 @@ class BacklogController extends mixOf(taiga.Controller, taiga.PageMixin, taiga.F
         "$tgNavUrls",
         "$tgEvents",
         "$tgAnalytics",
-        "tgLoader"
+        "tgLoader",
+        "$translate"
     ]
 
     constructor: (@scope, @rootscope, @repo, @confirm, @rs, @params, @q,
-                  @location, @appTitle, @navUrls, @events, @analytics, tgLoader) ->
+                  @location, @appTitle, @navUrls, @events, @analytics, tgLoader, @translate) ->
         bindMethods(@)
 
         @scope.sectionName = "Backlog"
@@ -495,8 +496,8 @@ class BacklogController extends mixOf(taiga.Controller, taiga.PageMixin, taiga.F
         @rootscope.$broadcast("usform:edit", us)
 
     deleteUserStory: (us) ->
-        #TODO: i18n
-        title = "Delete User Story"
+        title = @translate.instant("US.TITLE_DELETE_ACTION")
+
         message = us.subject
 
         @confirm.askOnDelete(title, message).then (finish) =>
@@ -527,12 +528,11 @@ module.controller("BacklogController", BacklogController)
 ## Backlog Directive
 #############################################################################
 
-BacklogDirective = ($repo, $rootscope) ->
+BacklogDirective = ($repo, $rootscope, $translate) ->
     ## Doom line Link
     doomLineTemplate = _.template("""
-    <div class="doom-line"><span>Project Scope [Doomline]</span></div>
+    <div class="doom-line"><span><%- text %></span></div>
     """)
-    # TODO: i18n
 
     linkDoomLine = ($scope, $el, $attrs, $ctrl) ->
         reloadDoomLine = ->
@@ -559,7 +559,8 @@ BacklogDirective = ($repo, $rootscope) ->
             $el.find(".doom-line").remove()
 
         addDoomLineDom = (element) ->
-            $(element).before(doomLineTemplate({}))
+            text = $translate.instant("BACKLOG.DOOMLINE")
+            $(element).before(doomLineTemplate({"text": text}))
 
         getUsItems = ->
             rowElements = $el.find('.backlog-table-body .us-item-row')
@@ -629,10 +630,14 @@ BacklogDirective = ($repo, $rootscope) ->
 
         if $ctrl.showTags
             elm.addClass("active")
-            elm.find(".text").text("Hide Tags") # TODO: i18n
+
+            text = $translate.instant("BACKLOG.TAGS.HIDE")
+            elm.find(".text").text(text)
         else
             elm.removeClass("active")
-            elm.find(".text").text("Show Tags") # TODO: i18n
+
+            text = $translate.instant("BACKLOG.TAGS.SHOW")
+            elm.find(".text").text(text)
 
     showHideFilter = ($scope, $el, $ctrl) ->
         sidebar = $el.find("sidebar.filters-bar")
@@ -646,7 +651,10 @@ BacklogDirective = ($repo, $rootscope) ->
         sidebar.toggleClass("active")
         target.toggleClass("active")
 
-        toggleText(target.find(".text"), ["Remove Filters", "Show Filters"]) # TODO: i18n
+        removeText = $translate.instant("BACKLOG.FILTERS.REMOVE")
+        showText = $translate.instant("BACKLOG.FILTERS.SHOW")
+
+        toggleText(target.find(".text"), [removeText, showText])
 
         if !sidebar.hasClass("active")
             $ctrl.resetFilters()
@@ -687,14 +695,13 @@ BacklogDirective = ($repo, $rootscope) ->
     return {link: link}
 
 
-module.directive("tgBacklog", ["$tgRepo", "$rootScope", BacklogDirective])
+module.directive("tgBacklog", ["$tgRepo", "$rootScope", "$translate", BacklogDirective])
 
 #############################################################################
 ## User story points directive
 #############################################################################
 
-UsRolePointsSelectorDirective = ($rootscope, $template) ->
-    #TODO: i18n
+UsRolePointsSelectorDirective = ($rootscope, $template, $compile, $translate) ->
     selectionTemplate = $template.get("backlog/us-role-points-popover.html", true)
 
     link = ($scope, $el, $attrs) ->
@@ -704,7 +711,7 @@ UsRolePointsSelectorDirective = ($rootscope, $template) ->
             numberOfRoles = _.size(roles)
 
             if numberOfRoles > 1
-                $el.append(selectionTemplate({"roles":roles}))
+                $el.append($compile(selectionTemplate({"roles": roles}))($scope))
             else
                 $el.find(".icon-arrow-bottom").remove()
                 $el.find(".header-points").addClass("not-clickable")
@@ -715,7 +722,9 @@ UsRolePointsSelectorDirective = ($rootscope, $template) ->
 
         $scope.$on "uspoints:clear-selection", (ctx, roleId) ->
             $el.find(".popover").popover().close()
-            $el.find(".header-points").text("Points") #TODO: i18n
+
+            text = $translate.instant("COMMON.FIELDS.POINTS")
+            $el.find(".header-points").text(text)
 
         # Dom Event Handlers
         $el.on "click", (event) ->
@@ -743,7 +752,7 @@ UsRolePointsSelectorDirective = ($rootscope, $template) ->
 
     return {link: link}
 
-module.directive("tgUsRolePointsSelector", ["$rootScope", "$tgTemplate", UsRolePointsSelectorDirective])
+module.directive("tgUsRolePointsSelector", ["$rootScope", "$tgTemplate", "$compile", UsRolePointsSelectorDirective])
 
 
 UsPointsDirective = ($tgEstimationsService, $repo, $tgTemplate) ->
@@ -852,7 +861,7 @@ module.directive("tgBacklogUsPoints", ["$tgEstimationsService", "$tgRepo", "$tgT
 ## Burndown graph directive
 #############################################################################
 
-tgBacklogGraphDirective = ->
+tgBacklogGraphDirective = ($translate) ->
     redrawChart = (element, dataToDraw) ->
         width = element.width()
         element.height(width/6)
@@ -932,18 +941,17 @@ tgBacklogGraphDirective = ->
             tooltip: true
             tooltipOpts: {
                 content: (label, xval, yval, flotItem) ->
-                    #TODO: i18n
                     if flotItem.seriesIndex == 1
-                        return "Optimal pending points for sprint #{xval} should be #{yval}"
+                        return $translate.instant("BACKLOG.OPTIMA", {xval: xval, yval: yval})
 
                     else if flotItem.seriesIndex == 2
-                        return "Real pending points for sprint #{xval} is #{yval}"
+                        return $translate.instant("BACKLOG.REAL", {xval: xval, yval: yval})
 
                     else if flotItem.seriesIndex == 3
-                        return "Incremented points by team requirements for sprint #{xval} is #{Math.abs(yval)}"
+                        return $translate.instant("BACKLOG.INCREMENT_TEAM", {xval: xval, yval: Math.abs(yval)})
 
                     else
-                        return "Incremented points by client requirements for sprint #{xval} is #{Math.abs(yval)}"
+                        return $translate.instant("BACKLOG.INCREMENT_CLIENT", {xval: xval, yval: Math.abs(yval)})
             }
         }
 
@@ -966,7 +974,7 @@ tgBacklogGraphDirective = ->
     return {link: link}
 
 
-module.directive("tgGmBacklogGraph", tgBacklogGraphDirective)
+module.directive("tgGmBacklogGraph", ["$translate", tgBacklogGraphDirective])
 
 
 #############################################################################
