@@ -77,6 +77,9 @@ exports.files = function () {
         'modules/common/external-reference',
         'modules/common/custom-fields',
 
+        //Profile modules
+        'modules/profile/profile-bar',
+
         //Issues modules
         'modules/issues/issues-table',
 
