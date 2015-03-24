@@ -18,6 +18,7 @@ exports.files = function () {
         'layout/elements',
         'layout/forms',
         'layout/not-found',
+        'layout/profile',
         'layout/backlog',
         'layout/taskboard',
         'layout/us-detail',
@@ -75,11 +76,6 @@ exports.files = function () {
         'modules/common/wizard',
         'modules/common/external-reference',
         'modules/common/custom-fields',
-
-        //Project modules
-        'modules/home-projects-list',
-        'modules/home-project',
-        'modules/create-project',
 
         //Issues modules
         'modules/issues/issues-table',
