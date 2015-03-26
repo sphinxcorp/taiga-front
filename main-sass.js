@@ -82,6 +82,7 @@ exports.files = function () {
         'modules/profile/profile-content-tabs',
         'modules/profile/profile-sidebar',
         'modules/profile/profile-timeline',
+        'modules/profile/profile-projects',
 
         //Issues modules
         'modules/issues/issues-table',
