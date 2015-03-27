@@ -73,6 +73,7 @@ paths.js = [
     paths.tmp + "coffee/modules/admin/*.js",
     paths.tmp + "coffee/modules/projects/*.js",
     paths.tmp + "coffee/modules/locales/*.js",
+    paths.tmp + "coffee/modules/profile/*.js",
     paths.tmp + "coffee/modules/base/*.js",
     paths.tmp + "coffee/modules/resources/*.js",
     paths.tmp + "coffee/modules/user-settings/*.js",
