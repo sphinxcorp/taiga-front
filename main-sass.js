@@ -77,6 +77,11 @@ exports.files = function () {
         'modules/common/external-reference',
         'modules/common/custom-fields',
 
+        //Project modules
+        'modules/home-projects-list',
+        'modules/home-project',
+        'modules/create-project',
+
         //Profile modules
         'modules/profile/profile-bar',
         'modules/profile/profile-content-tabs',
